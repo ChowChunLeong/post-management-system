@@ -14,9 +14,9 @@ import { JwtAuthGuard } from './jwt-auth.guard';
     UsersModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'your-secret-key', // Use environment variable
+      secret: process.env.JWT_SECRET || 'your-secret-key',
       signOptions: {
-        expiresIn: process.env.JWT_EXPIRES_IN || '3600s', // Token expires in 24 hours
+        expiresIn: process.env.JWT_EXPIRES_IN || '3600s',
       },
     }),
   ],

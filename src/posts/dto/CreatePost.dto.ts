@@ -1,4 +1,3 @@
-// src/posts/dto/create-post.dto.ts
 import {
   IsNotEmpty,
   IsString,
@@ -24,8 +23,6 @@ export class CreatePostDto {
   @IsNotEmpty()
   @IsString()
   content: string;
-
-  // `author_id` should be inferred from JWT, so not included in DTO
 
   @IsOptional()
   @IsEnum(PostStatus)

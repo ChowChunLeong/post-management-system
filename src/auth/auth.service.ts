@@ -44,11 +44,11 @@ export class AuthService {
   }
   private generateToken(user: User): string {
     const payload = {
-      sub: user.id, // 'sub' matches your JwtStrategy (payload.sub)
-      username: user.username, // matches your JwtStrategy (payload.username)
-      email: user.email, // matches your JwtStrategy (payload.email)
-      role: user.role.name, // matches your JwtStrategy
-      iat: Math.floor(Date.now() / 1000), // issued at timestamp (optional)
+      sub: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role.name,
+      iat: Math.floor(Date.now() / 1000),
     };
 
     // JwtService.sign() uses the secret and expiration from your module config
