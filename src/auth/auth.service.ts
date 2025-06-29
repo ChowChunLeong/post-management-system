@@ -19,13 +19,8 @@ export class AuthService {
   async signup(createUserDto: CreateUserDto) {
     const user = await this.usersService.createUser(createUserDto);
 
-    // Auth-specific logic here
-    // Generate JWT token
-    const accessToken = this.generateToken(user);
-
     return {
       user: { id: user.id, username: user.username, email: user.email },
-      accessToken,
     };
   }
   async login(loginDto: { username: string; password: string }) {
