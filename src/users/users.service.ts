@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './users.entity';
 import { Repository } from 'typeorm';
@@ -26,12 +30,16 @@ export class UsersService {
     const existing = await this.userRepo.findOne({
       where: [{ username }, { email }],
     });
-    if (existing) throw new Error('Username or email already exists');
+    if (existing) {
+      throw new BadRequestException('Username or email already exists');
+    }
 
     const role = await this.roleRepo.findOne({
-      where: { name: RoleName[roleName] },
+      where: { name: RoleName[roleName.toUpperCase()] },
     });
-    if (!role) throw new Error('Invalid role');
+    if (!role) {
+      throw new NotFoundException('Invalid role');
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
