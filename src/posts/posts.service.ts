@@ -1,4 +1,9 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePostDto } from './dto/CreatePost.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -47,5 +52,36 @@ export class PostsService {
     });
 
     return this.postRepository.save(post);
+  }
+
+  async findOnePostById(id: number, user: any): Promise<Post> {
+    const post = await this.postRepository.findOne({
+      where: { id },
+      relations: ['author', 'tags'],
+    });
+
+    if (!post) {
+      throw new NotFoundException(`Post with ID ${id} not found.`);
+    }
+
+    const isOwner = post.author.id === user.id;
+    const isPublished = post.status === 'PUBLISHED';
+    const role = user.role; // assuming user.role is loaded and has a `name` field
+    // Admin can view all
+    if (role === 'ADMIN') return post;
+
+    // Editor can view own posts or published ones
+    if (role === 'EDITOR') {
+      if (isOwner || isPublished) return post;
+      throw new ForbiddenException('You are not allowed to view this post.');
+    }
+
+    // Viewer can only see published posts
+    if (role === 'VIEWER') {
+      if (isPublished) return post;
+      throw new ForbiddenException('You are not allowed to view this post.');
+    }
+
+    return post;
   }
 }
