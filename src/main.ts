@@ -4,10 +4,14 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
+import { SeederService } from './seeder/seeder.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
+  if (process.env.NODE_ENV !== 'production') {
+    const seeder = app.get(SeederService);
+    await seeder.seed();
+  }
   app.useGlobalFilters(new AllExceptionsFilter());
 
   app.useGlobalPipes(

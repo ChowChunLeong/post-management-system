@@ -9,6 +9,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { PostsModule } from './posts/posts.module';
 import { TagsModule } from './tags/tags.module';
+import { SeederModule } from './seeder/seeder.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { TagsModule } from './tags/tags.module';
     UsersModule,
     PostsModule,
     TagsModule,
+    SeederModule, // 👈 Import it here
   ],
   controllers: [AppController],
   providers: [
