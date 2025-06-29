@@ -5,13 +5,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreatePostDto } from './dto/CreatePost.dto';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/users.entity';
 import { Post } from './posts.entity';
 import { Tag } from 'src/tags/tags.entity';
 import { PostStatus } from './posts.enum';
 import { UpdatePostDto } from './dto/UpdatePost.dto';
+import { SearchPostDto } from './dto/SearchPost.dto';
+import { RoleName } from 'src/roles/role.enum';
 
 @Injectable()
 export class PostsService {
@@ -183,5 +185,64 @@ export class PostsService {
     }
 
     return updatedPost;
+  }
+
+  async searchPosts(dto: SearchPostDto, user: any): Promise<Post[]> {
+    const { keyword, tags, startDate, endDate } = dto;
+
+    const query = this.postRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.author', 'author');
+    // 🔒 Role-based visibility
+    if (user.role == RoleName.ADMIN) {
+      // full access
+    } else if (user.role == 'EDITOR') {
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.where('post.author.id = :userId', { userId: user.id }).orWhere(
+            'post.status = :published',
+            { published: 'published' },
+          );
+        }),
+      );
+    } else if (user.role === 'VIEWER') {
+      query.andWhere('post.status = :published', { published: 'PUBLISHED' });
+    }
+
+    // 🔍 Keyword search (title or content)
+    if (keyword) {
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.where('post.title LIKE :kw', { kw: `%${keyword}%` }).orWhere(
+            'post.content LIKE :kw',
+            { kw: `%${keyword}%` },
+          );
+        }),
+      );
+    }
+    // Tag filter (AND all tags)
+    if (tags && tags.length > 0) {
+      const tagList = Array.isArray(tags) ? tags : [tags]; // ensures it's a real array
+      query
+        .innerJoin('post.tags', 'filterTag')
+        .andWhere('filterTag.name IN (:...tagList)', { tagList })
+        .groupBy('post.id')
+        .having('COUNT(DISTINCT filterTag.id) = :tagCount', {
+          tagCount: tagList.length,
+        });
+    } else {
+      query.leftJoinAndSelect('post.tags', 'tag');
+    }
+
+    // 📅 Date range filter
+    if (startDate) {
+      query.andWhere('post.createdAt >= :startDate', { startDate });
+    }
+
+    if (endDate) {
+      query.andWhere('post.createdAt <= :endDate', { endDate });
+    }
+    console.log(query.getQueryAndParameters());
+    return query.getMany();
   }
 }
