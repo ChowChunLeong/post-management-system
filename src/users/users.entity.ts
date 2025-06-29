@@ -7,8 +7,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
-import { Role } from '../roles/role.entity';
+import { Role } from '../roles/roles.entity';
+import { Post } from 'src/posts/posts.entity';
 
 @Entity('users')
 export class User {
@@ -27,6 +29,9 @@ export class User {
   @ManyToOne(() => Role, (role) => role.users, { eager: true, nullable: false })
   @JoinColumn({ name: 'role_id' })
   role: Role;
+
+  @OneToMany(() => Post, (post) => post.author)
+  posts: Post[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

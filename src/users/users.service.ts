@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './users.entity';
 import { Repository } from 'typeorm';
-import { Role } from 'src/roles/role.entity';
+import { Role } from 'src/roles/roles.entity';
 import * as bcrypt from 'bcrypt';
 import { RoleName } from 'src/roles/role.enum';
 
