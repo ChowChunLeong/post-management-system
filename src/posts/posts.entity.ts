@@ -9,6 +9,7 @@ import {
   JoinColumn,
   ManyToMany,
   JoinTable,
+  Unique,
 } from 'typeorm';
 import { User } from '../users/users.entity';
 import { PostStatus } from './posts.enum';
@@ -19,7 +20,7 @@ export class Post {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   title: string;
 
   @Column('text')
