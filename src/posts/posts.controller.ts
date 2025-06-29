@@ -20,7 +20,11 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Role } from 'src/roles/roles.entity';
 import { UpdatePostDto } from './dto/UpdatePost.dto';
 import { SearchPostDto } from './dto/SearchPost.dto';
+import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import { PostResponseDto } from './dto/response/CreatePost/PostResponse.dto';
 
+@ApiTags('Posts')
+@ApiBearerAuth('access-token') // 🔐 Enables Authorize button for this controller
 @Controller('posts')
 @UseGuards(RolesGuard) // Apply guards to entire controller
 export class PostsController {
@@ -28,9 +32,13 @@ export class PostsController {
 
   @Roles(RoleName.EDITOR)
   @Post('create')
-  async signup(
-    @CurrentUser() user: any,
+  @ApiCreatedResponse({
+    description: 'Post created successfully',
+    type: PostResponseDto,
+  })
+  async create(
     @Body() createPostsDto: CreatePostDto,
+    @CurrentUser() user: any,
   ) {
     return this.postsService.createPost(createPostsDto, user.id);
   }

@@ -9,8 +9,8 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { LoginResponseDto } from './dto/response/login/LoginResponseDto';
-import { CreateUserResponseDto } from './dto/response/signup/CreateUserResponseDto';
+import { LoginResponseDto } from './dto/response/login/LoginResponse.dto';
+import { CreateUserResponseDto } from './dto/response/signup/CreateUserResponse.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
