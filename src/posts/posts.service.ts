@@ -10,6 +10,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/users.entity';
 import { Post } from './posts.entity';
 import { Tag } from 'src/tags/tags.entity';
+import { PostStatus } from './posts.enum';
+import { UpdatePostDto } from './dto/UpdatePost.dto';
 
 @Injectable()
 export class PostsService {
@@ -83,5 +85,103 @@ export class PostsService {
     }
 
     return post;
+  }
+
+  async deletePostById(
+    postId: number,
+    user: any,
+  ): Promise<{ message: string }> {
+    const post = await this.postRepository.findOne({
+      where: { id: postId },
+      relations: ['author'],
+    });
+
+    if (!post) {
+      throw new NotFoundException(`Post with ID ${postId} not found.`);
+    }
+
+    const isOwner = post.author.id === user.id;
+    const role = user.role; // 'ADMIN', 'EDITOR', etc.
+
+    if (role === 'ADMIN' || (role === 'EDITOR' && isOwner)) {
+      if (post.status === PostStatus.ARCHIVED) {
+        return { message: 'Post is already archived.' };
+      }
+
+      post.status = PostStatus.ARCHIVED;
+      await this.postRepository.save(post);
+
+      return { message: 'Post archived (soft-deleted) successfully.' };
+    }
+
+    throw new ForbiddenException(
+      'You do not have permission to archive this post.',
+    );
+  }
+
+  async updatePostById(
+    id: number,
+    dto: UpdatePostDto,
+    user: any,
+  ): Promise<Post> {
+    const post = await this.postRepository.findOne({
+      where: { id },
+      relations: ['author', 'tags'],
+    });
+
+    if (!post) {
+      throw new NotFoundException(`Post with ID ${id} not found.`);
+    }
+
+    const isOwner = post.author.id === user.id;
+    const role = user.role; // assuming string like 'ADMIN', 'EDITOR'
+
+    if (!(role == 'ADMIN' || (role == 'EDITOR' && isOwner))) {
+      throw new ForbiddenException(
+        'You do not have permission to update this post.',
+      );
+    }
+    if (dto.title !== undefined) {
+      const existing = await this.postRepository.findOneBy({
+        title: dto.title,
+      });
+      if (existing && id != existing.id) {
+        throw new ConflictException('There are duplicate Post title.');
+      }
+      post.title = dto.title;
+    }
+    if (dto.content !== undefined) post.content = dto.content;
+    if (dto.status !== undefined) post.status = dto.status;
+
+    if (dto.tags) {
+      const tags = await Promise.all(
+        dto.tags.map(async (name) => {
+          const existing = await this.tagRepository.findOneBy({ name });
+          return (
+            existing ??
+            this.tagRepository.save(this.tagRepository.create({ name }))
+          );
+        }),
+      );
+      post.tags = tags;
+    }
+
+    const updatedPost = await this.postRepository.save(post);
+
+    // Step 1: Get orphan tag IDs
+    const orphanTags = await this.tagRepository
+      .createQueryBuilder('tag')
+      .leftJoin('tag.posts', 'post')
+      .where('post.id IS NULL')
+      .select('tag.id')
+      .getMany();
+
+    // Step 2: Delete them by ID
+    if (orphanTags.length > 0) {
+      const orphanIds = orphanTags.map((tag) => tag.id);
+      await this.tagRepository.delete(orphanIds);
+    }
+
+    return updatedPost;
   }
 }
