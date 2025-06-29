@@ -1,4 +1,3 @@
-// src/posts/dto/search-post.dto.ts
 import { Transform } from 'class-transformer';
 import { IsOptional, IsString, IsArray, IsDateString } from 'class-validator';
 

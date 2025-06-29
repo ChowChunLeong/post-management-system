@@ -20,7 +20,15 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Role } from 'src/roles/roles.entity';
 import { UpdatePostDto } from './dto/UpdatePost.dto';
 import { SearchPostDto } from './dto/SearchPost.dto';
-import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import { PostResponseDto } from './dto/response/CreatePost/PostResponse.dto';
 
 @ApiTags('Posts')
@@ -51,6 +59,10 @@ export class PostsController {
 
   @Roles(RoleName.ADMIN, RoleName.EDITOR, RoleName.VIEWER)
   @Get(':id')
+  @ApiOperation({ summary: 'Get post by ID' })
+  @ApiParam({ name: 'id', type: Number, description: 'Post ID' })
+  @ApiOkResponse({ description: 'Post found', type: PostResponseDto })
+  @ApiNotFoundResponse({ description: 'Post not found' })
   async getPostById(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: any,
