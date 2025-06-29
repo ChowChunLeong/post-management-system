@@ -3,8 +3,14 @@ import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/CreateUsers.dto';
 import { LoginDto } from './dto/Login.dto';
 import { Public } from './decorators/public.decorator';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { LoginResponseDto } from './dto/response/LoginResponseDto';
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import { LoginResponseDto } from './dto/response/login/LoginResponseDto';
+import { CreateUserResponseDto } from './dto/response/signup/CreateUserResponseDto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -13,6 +19,13 @@ export class AuthController {
 
   @Public()
   @Post('signup')
+  @ApiOperation({
+    summary: 'User sign up',
+  })
+  @ApiCreatedResponse({
+    description: 'User created successfully',
+    type: CreateUserResponseDto,
+  })
   async signup(@Body() createUserDto: CreateUserDto) {
     return this.authService.signup(createUserDto);
   }
