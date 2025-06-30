@@ -19,9 +19,12 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { SearchPostDto } from './dto/search-post.dto';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -40,10 +43,12 @@ export class PostsController {
 
   @Roles(RoleName.EDITOR)
   @Post('create')
+  @ApiOperation({ summary: 'create post. Only editor can create post' })
   @ApiCreatedResponse({
     description: 'Post created successfully',
     type: CreatePostResponseDto,
   })
+  @ApiConflictResponse({ description: 'There are duplicate Post title.' })
   async create(
     @Body() createPostsDto: CreatePostDto,
     @CurrentUser() user: any,
@@ -64,10 +69,16 @@ export class PostsController {
 
   @Roles(RoleName.ADMIN, RoleName.EDITOR, RoleName.VIEWER)
   @Get(':id')
-  @ApiOperation({ summary: 'Get post by ID' })
+  @ApiOperation({
+    summary:
+      'Get post by ID. An Admin can view all posts. An Editor can view all posts they own and posts that have been published. A Viewer can only view posts that have been published.',
+  })
   @ApiParam({ name: 'id', type: Number, description: 'Post ID' })
   @ApiOkResponse({ description: 'Post found', type: CreatePostResponseDto })
-  @ApiNotFoundResponse({ description: 'Post not found' })
+  @ApiNotFoundResponse({ description: 'Post with ID not found' })
+  @ApiForbiddenResponse({
+    description: 'You are not allowed to view this post.',
+  })
   async getPostById(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: any,
@@ -77,14 +88,18 @@ export class PostsController {
 
   @Roles(RoleName.ADMIN, RoleName.EDITOR)
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete a post by ID' })
+  @ApiOperation({
+    summary:
+      'Delete a post by ID. An Admin can delete all posts. An Editor can delete all posts they own',
+  })
   @ApiParam({
     name: 'id',
     type: Number,
     description: 'ID of the post to delete',
   })
-  @ApiOkResponse({ description: 'Post deleted successfully' })
-  @ApiNotFoundResponse({ description: 'Post not found' })
+  @ApiOkResponse({ description: 'Post soft-deleted  successfully' })
+  @ApiNotFoundResponse({ description: 'Post with ID not found' })
+  @ApiBadRequestResponse({ description: 'Post is already archived' })
   async deletePost(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: any,
@@ -98,13 +113,15 @@ export class PostsController {
   @ApiParam({
     name: 'id',
     type: Number,
-    description: 'ID of the post to update',
+    description:
+      'ID of the post to update. An Admin can update all posts. An Editor can update all posts they own',
   })
   @ApiOkResponse({
     description: 'Post updated successfully',
     type: UpdatePostResponseDto,
   })
-  @ApiNotFoundResponse({ description: 'Post not found' })
+  @ApiNotFoundResponse({ description: 'Post with ID not found' })
+  @ApiConflictResponse({ description: 'There are duplicate Post title.' })
   @ApiBody({ type: UpdatePostDto })
   async updatePost(
     @Param('id', ParseIntPipe) id: number,

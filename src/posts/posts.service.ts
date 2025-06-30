@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -107,7 +108,7 @@ export class PostsService {
 
     if (role === 'ADMIN' || (role === 'EDITOR' && isOwner)) {
       if (post.status === PostStatus.ARCHIVED) {
-        return { message: 'Post is already archived.' };
+        throw new BadRequestException('Post is already archived.');
       }
 
       post.status = PostStatus.ARCHIVED;
@@ -242,7 +243,6 @@ export class PostsService {
     if (endDate) {
       query.andWhere('post.createdAt <= :endDate', { endDate });
     }
-    console.log(query.getQueryAndParameters());
     return query.getMany();
   }
 }
