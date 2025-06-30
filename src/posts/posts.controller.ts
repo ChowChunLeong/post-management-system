@@ -10,18 +10,17 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { CreatePostDto } from './dto/CreatePost.dto';
+import { CreatePostDto } from './dto/create-post.dto';
 import { PostsService } from './posts.service';
 import { RoleName } from 'src/roles/role.enum';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { Role } from 'src/roles/roles.entity';
-import { UpdatePostDto } from './dto/UpdatePost.dto';
-import { SearchPostDto } from './dto/SearchPost.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { SearchPostDto } from './dto/search-post.dto';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -29,7 +28,8 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
-import { PostResponseDto } from './dto/response/CreatePost/PostResponse.dto';
+import { CreatePostResponseDto } from './dto/response/create-post/create-post-response.dto';
+import { UpdatePostResponseDto } from './dto/response/update-post/post-response.dto';
 
 @ApiTags('Posts')
 @ApiBearerAuth('access-token') // 🔐 Enables Authorize button for this controller
@@ -42,7 +42,7 @@ export class PostsController {
   @Post('create')
   @ApiCreatedResponse({
     description: 'Post created successfully',
-    type: PostResponseDto,
+    type: CreatePostResponseDto,
   })
   async create(
     @Body() createPostsDto: CreatePostDto,
@@ -53,6 +53,11 @@ export class PostsController {
 
   @Roles(RoleName.ADMIN, RoleName.EDITOR, RoleName.VIEWER)
   @Get('search')
+  @ApiOperation({ summary: 'search post with filter' })
+  @ApiOkResponse({
+    description: 'Post that matched with filter condition listed',
+    type: SearchPostDto,
+  })
   async searchPosts(@Query() dto: SearchPostDto, @CurrentUser() user: any) {
     return this.postsService.searchPosts(dto, user);
   }
@@ -61,7 +66,7 @@ export class PostsController {
   @Get(':id')
   @ApiOperation({ summary: 'Get post by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'Post ID' })
-  @ApiOkResponse({ description: 'Post found', type: PostResponseDto })
+  @ApiOkResponse({ description: 'Post found', type: CreatePostResponseDto })
   @ApiNotFoundResponse({ description: 'Post not found' })
   async getPostById(
     @Param('id', ParseIntPipe) id: number,
@@ -72,6 +77,14 @@ export class PostsController {
 
   @Roles(RoleName.ADMIN, RoleName.EDITOR)
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete a post by ID' })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'ID of the post to delete',
+  })
+  @ApiOkResponse({ description: 'Post deleted successfully' })
+  @ApiNotFoundResponse({ description: 'Post not found' })
   async deletePost(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: any,
@@ -81,6 +94,18 @@ export class PostsController {
 
   @Roles(RoleName.ADMIN, RoleName.EDITOR)
   @Patch(':id')
+  @ApiOperation({ summary: 'Update a post by ID' })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'ID of the post to update',
+  })
+  @ApiOkResponse({
+    description: 'Post updated successfully',
+    type: UpdatePostResponseDto,
+  })
+  @ApiNotFoundResponse({ description: 'Post not found' })
+  @ApiBody({ type: UpdatePostDto })
   async updatePost(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdatePostDto,

@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { AuthorDto } from './author.dto';
-import { PostStatus } from '../../CreatePost.dto';
-import { TagDto } from './Tag.dto';
+import { PostStatus } from '../../create-post.dto';
+import { TagDto } from './tag.dto';
 
-export class PostResponseDto {
+export class CreatePostResponseDto {
   @ApiProperty({ example: 1 })
   id: number;
 

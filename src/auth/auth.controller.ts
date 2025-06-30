@@ -1,7 +1,6 @@
 import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from './dto/CreateUsers.dto';
-import { LoginDto } from './dto/Login.dto';
+import { CreateUserDto } from './dto/create-users.dto';
 import { Public } from './decorators/public.decorator';
 import {
   ApiCreatedResponse,
@@ -9,8 +8,9 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { LoginResponseDto } from './dto/response/login/LoginResponse.dto';
-import { CreateUserResponseDto } from './dto/response/signup/CreateUserResponse.dto';
+import { LoginResponseDto } from './dto/response/login/login-response.dto';
+import { CreateUserResponseDto } from './dto/response/signup/create-user-response.dto';
+import { LoginDto } from './dto/login.dto';
 
 @ApiTags('Auth')
 @Controller('auth')

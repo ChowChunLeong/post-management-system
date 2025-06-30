@@ -4,15 +4,15 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreatePostDto } from './dto/CreatePost.dto';
+import { CreatePostDto } from './dto/create-post.dto';
 import { Brackets, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/users.entity';
 import { Post } from './posts.entity';
 import { Tag } from 'src/tags/tags.entity';
 import { PostStatus } from './posts.enum';
-import { UpdatePostDto } from './dto/UpdatePost.dto';
-import { SearchPostDto } from './dto/SearchPost.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { SearchPostDto } from './dto/search-post.dto';
 import { RoleName } from 'src/roles/role.enum';
 
 @Injectable()
