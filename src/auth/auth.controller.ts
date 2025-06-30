@@ -3,10 +3,13 @@ import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-users.dto';
 import { Public } from './decorators/public.decorator';
 import {
+  ApiBadRequestResponse,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { LoginResponseDto } from './dto/response/login/login-response.dto';
 import { CreateUserResponseDto } from './dto/response/signup/create-user-response.dto';
@@ -26,6 +29,11 @@ export class AuthController {
     description: 'User created successfully',
     type: CreateUserResponseDto,
   })
+  @ApiBadRequestResponse({ description: 'Username or email already exists' })
+  @ApiNotFoundResponse({
+    description:
+      'Invalid role(If a user sends a request with a roleName field that is not EDITOR or VIEWER, return an "Invalid role" error message. )',
+  })
   async signup(@Body() createUserDto: CreateUserDto) {
     return this.authService.signup(createUserDto);
   }
@@ -40,6 +48,7 @@ export class AuthController {
     description: 'Login successful',
     type: LoginResponseDto,
   })
+  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
