@@ -23,9 +23,9 @@ export class UsersService {
     username: string;
     email: string;
     password: string;
-    roleName: string;
+    role: string;
   }): Promise<User> {
-    const { username, email, password, roleName } = data;
+    const { username, email, password, role } = data;
 
     const existing = await this.userRepo.findOne({
       where: [{ username }, { email }],
@@ -34,10 +34,10 @@ export class UsersService {
       throw new BadRequestException('Username or email already exists');
     }
 
-    const role = await this.roleRepo.findOne({
-      where: { name: RoleName[roleName.toUpperCase()] },
+    const roleData = await this.roleRepo.findOne({
+      where: { name: RoleName[role.toUpperCase()] },
     });
-    if (!role) {
+    if (!roleData) {
       throw new NotFoundException('Invalid role');
     }
 
@@ -47,7 +47,7 @@ export class UsersService {
       username,
       email,
       password_hash: hashedPassword,
-      role,
+      role: roleData,
     });
 
     return this.userRepo.save(user);
