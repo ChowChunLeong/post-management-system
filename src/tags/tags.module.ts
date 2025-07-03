@@ -4,5 +4,6 @@ import { Tag } from './tags.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Tag])],
+  exports: [TypeOrmModule],
 })
 export class TagsModule {}

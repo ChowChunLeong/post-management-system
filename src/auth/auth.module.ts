@@ -19,9 +19,9 @@ import { JwtAuthGuard } from './jwt-auth.guard';
         expiresIn: process.env.JWT_EXPIRES_IN || '3600s',
       },
     }),
-  ],
+  ], //import outside module to use on own modules
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
-  exports: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
+  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard], //own modules use
+  exports: [JwtAuthGuard, RolesGuard], //outside modules can use
 })
 export class AuthModule {}
