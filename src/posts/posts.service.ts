@@ -15,6 +15,7 @@ import { PostStatus } from './posts.enum';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { SearchPostDto } from './dto/search-post.dto';
 import { RoleName } from 'src/roles/role.enum';
+import { AuthUser } from 'src/auth/auth-user.interface';
 
 @Injectable()
 export class PostsService {
@@ -188,7 +189,7 @@ export class PostsService {
     return updatedPost;
   }
 
-  async searchPosts(dto: SearchPostDto, user: any): Promise<Post[]> {
+  async searchPosts(dto: SearchPostDto, user: AuthUser): Promise<Post[]> {
     const { keyword, tags, startDate, endDate } = dto;
 
     const query = this.postRepository

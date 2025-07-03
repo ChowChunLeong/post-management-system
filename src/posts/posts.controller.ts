@@ -33,6 +33,7 @@ import {
 } from '@nestjs/swagger';
 import { CreatePostResponseDto } from './dto/response/create-post/create-post-response.dto';
 import { UpdatePostResponseDto } from './dto/response/update-post/post-response.dto';
+import { AuthUser } from 'src/auth/auth-user.interface';
 
 @ApiTags('Posts')
 @ApiBearerAuth('access-token') // 🔐 Enables Authorize button for this controller
@@ -51,9 +52,9 @@ export class PostsController {
   @ApiConflictResponse({ description: 'There are duplicate Post title.' })
   async create(
     @Body() createPostsDto: CreatePostDto,
-    @CurrentUser() user: any,
+    @CurrentUser('id') userId: number,
   ) {
-    return this.postsService.createPost(createPostsDto, user.id);
+    return this.postsService.createPost(createPostsDto, userId);
   }
 
   @Roles(RoleName.ADMIN, RoleName.EDITOR, RoleName.VIEWER)
@@ -63,7 +64,10 @@ export class PostsController {
     description: 'Post that matched with filter condition listed',
     type: SearchPostDto,
   })
-  async searchPosts(@Query() dto: SearchPostDto, @CurrentUser() user: any) {
+  async searchPosts(
+    @Query() dto: SearchPostDto,
+    @CurrentUser() user: AuthUser,
+  ) {
     return this.postsService.searchPosts(dto, user);
   }
 
