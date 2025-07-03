@@ -32,7 +32,7 @@ export class AuthController {
   @ApiBadRequestResponse({ description: 'Username or email already exists' })
   @ApiNotFoundResponse({
     description:
-      'Invalid role(If a user sends a request with a roleName field that is not EDITOR or VIEWER, return an "Invalid role" error message. )',
+      'Invalid role(If a user sends a request with a role field that is not EDITOR or VIEWER, return an "Invalid role" error message. )',
   })
   async signup(@Body() createUserDto: CreateUserDto) {
     return this.authService.signup(createUserDto);
