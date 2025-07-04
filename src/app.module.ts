@@ -18,7 +18,7 @@ import { SeederModule } from './seeder/seeder.module';
     UsersModule,
     PostsModule,
     TagsModule,
-    SeederModule, // 👈 Import it here
+    SeederModule,
   ],
   controllers: [AppController],
   providers: [

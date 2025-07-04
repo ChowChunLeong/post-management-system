@@ -6,17 +6,15 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './users.entity';
 import { Repository } from 'typeorm';
-import { Role } from 'src/roles/roles.entity';
 import * as bcrypt from 'bcrypt';
-import { RoleName } from 'src/roles/role.enum';
+import { RolesService } from 'src/roles/roles.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepo: Repository<User>,
-    @InjectRepository(Role)
-    private roleRepo: Repository<Role>,
+    private rolesService: RolesService,
   ) {}
 
   async createUser(data: {
@@ -34,9 +32,7 @@ export class UsersService {
       throw new BadRequestException('Username or email already exists');
     }
 
-    const roleData = await this.roleRepo.findOne({
-      where: { name: RoleName[role.toUpperCase()] },
-    });
+    const roleData = await this.rolesService.findRoleByName(role);
     if (!roleData) {
       throw new NotFoundException('Invalid role');
     }
@@ -57,6 +53,12 @@ export class UsersService {
     return this.userRepo.findOne({
       where: { username },
       relations: ['role'],
+    });
+  }
+
+  async findUserByIdOrFail(userId: number): Promise<User | null> {
+    return this.userRepo.findOneByOrFail({
+      id: userId,
     });
   }
 }

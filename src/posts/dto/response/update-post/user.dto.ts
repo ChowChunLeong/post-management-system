@@ -1,4 +1,3 @@
-// user.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { RoleDto } from './role.dto';
 

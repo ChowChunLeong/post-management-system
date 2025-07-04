@@ -13,7 +13,7 @@ import * as bcrypt from 'bcrypt';
 export class AuthService {
   constructor(
     private usersService: UsersService,
-    private jwtService: JwtService, // ← Make sure this is injected
+    private jwtService: JwtService,
   ) {}
 
   async signup(createUserDto: CreateUserDto) {
@@ -51,7 +51,6 @@ export class AuthService {
       iat: Math.floor(Date.now() / 1000),
     };
 
-    // JwtService.sign() uses the secret and expiration from your module config
     return this.jwtService.sign(payload);
   }
 

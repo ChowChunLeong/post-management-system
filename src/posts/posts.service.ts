@@ -16,18 +16,16 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { SearchPostDto } from './dto/search-post.dto';
 import { RoleName } from 'src/roles/role.enum';
 import { AuthUser } from 'src/auth/auth-user.interface';
+import { UsersService } from 'src/users/users.service';
+import { TagsService } from 'src/tags/tags.service';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(Post)
     private postRepository: Repository<Post>,
-
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-
-    @InjectRepository(Tag)
-    private tagRepository: Repository<Tag>,
+    private usersService: UsersService,
+    private tagsService: TagsService,
   ) {}
 
   async createPost(dto: CreatePostDto, userId: number): Promise<Post> {
@@ -35,17 +33,18 @@ export class PostsService {
     if (existing) {
       throw new ConflictException('There are duplicate Post title.');
     }
-    const author = await this.userRepository.findOneByOrFail({ id: userId });
+    const author = await this.usersService.findUserByIdOrFail(userId);
+    if (!author) {
+      throw new NotFoundException('User not found');
+    }
 
     // Ensure tags exist or create them
     const tags: Tag[] = await Promise.all(
       dto.tags.map(async (name) => {
-        const existing = await this.tagRepository.findOneBy({ name });
+        const existing = await this.tagsService.findTagsByName(name);
         if (existing) return existing;
 
-        // Create new tag if not found
-        const newTag = this.tagRepository.create({ name });
-        return this.tagRepository.save(newTag);
+        return await this.tagsService.create(name);
       }),
     );
 
@@ -160,11 +159,8 @@ export class PostsService {
     if (dto.tags) {
       const tags = await Promise.all(
         dto.tags.map(async (name) => {
-          const existing = await this.tagRepository.findOneBy({ name });
-          return (
-            existing ??
-            this.tagRepository.save(this.tagRepository.create({ name }))
-          );
+          const existing = await this.tagsService.findTagsByName(name);
+          return existing ?? this.tagsService.create(name);
         }),
       );
       post.tags = tags;
@@ -172,19 +168,7 @@ export class PostsService {
 
     const updatedPost = await this.postRepository.save(post);
 
-    // Step 1: Get orphan tag IDs
-    const orphanTags = await this.tagRepository
-      .createQueryBuilder('tag')
-      .leftJoin('tag.posts', 'post')
-      .where('post.id IS NULL')
-      .select('tag.id')
-      .getMany();
-
-    // Step 2: Delete them by ID
-    if (orphanTags.length > 0) {
-      const orphanIds = orphanTags.map((tag) => tag.id);
-      await this.tagRepository.delete(orphanIds);
-    }
+    await this.tagsService.deleteOrphanTag();
 
     return updatedPost;
   }

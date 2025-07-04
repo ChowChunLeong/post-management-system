@@ -1,4 +1,3 @@
-// post-response.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { UserDto } from './user.dto';
 import { TagDto } from './tag.dto';

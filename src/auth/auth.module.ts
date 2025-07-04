@@ -1,4 +1,3 @@
-// auth.module.ts
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -19,9 +18,9 @@ import { JwtAuthGuard } from './jwt-auth.guard';
         expiresIn: process.env.JWT_EXPIRES_IN || '3600s',
       },
     }),
-  ], //import outside module to use on own modules
+  ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard], //own modules use
-  exports: [JwtAuthGuard, RolesGuard], //outside modules can use
+  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
+  exports: [JwtAuthGuard, RolesGuard],
 })
 export class AuthModule {}
